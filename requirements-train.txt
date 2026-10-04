@@ -1,0 +1,9 @@
+# GPU (Colab): training, evaluation of the small model and merging. Versions tested together.
+-r requirements.txt
+transformers==5.18.0
+trl==1.14.1
+peft==0.21.2
+datasets==5.0.1
+accelerate==1.15.0
+bitsandbytes>=0.45
+huggingface_hub>=0.30

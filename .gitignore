@@ -1,0 +1,14 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+outputs/
+wandb/
+*.gguf
+llama.cpp/
+data/train.jsonl
+results/*.zip
+results/.partial-*

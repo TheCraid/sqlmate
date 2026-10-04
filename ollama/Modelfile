@@ -1,0 +1,19 @@
+# Run SQLMate locally with Ollama:
+#   ollama create sqlmate -f ollama/Modelfile
+#   ollama run sqlmate
+# The GGUF file is made in the Colab notebook (sqlmate-q8_0.gguf); put it in this folder first.
+FROM ./sqlmate-q8_0.gguf
+
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{- range .Messages }}{{- if ne .Role "system" }}<|im_start|>{{ .Role }}
+{{ .Content }}<|im_end|>
+{{ end }}{{- end }}<|im_start|>assistant
+"""
+
+SYSTEM """You translate questions into DuckDB SQL. Given a database schema and a question, reply with one read-only SQL query that answers it, and nothing else."""
+
+PARAMETER temperature 0
+PARAMETER num_ctx 4096
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|im_start|>"

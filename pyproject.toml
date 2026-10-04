@@ -1,0 +1,18 @@
+[project]
+name = "sqlmate"
+version = "1.0.0"
+description = "A small open model fine-tuned with QLoRA to write DuckDB SQL, evaluated by execution accuracy."
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["B008", "SIM108"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

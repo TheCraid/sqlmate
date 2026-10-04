@@ -1,0 +1,7 @@
+# Laptop: building the data, API baselines, the report and Ollama evaluation (no GPU needed)
+duckdb>=1.1
+sqlglot>=26
+httpx>=0.27
+python-dotenv>=1.0
+datasets>=3.0
+matplotlib>=3.8
