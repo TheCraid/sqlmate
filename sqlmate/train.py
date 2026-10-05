@@ -5,6 +5,10 @@ The loss is computed on the SQL answer only, not on the prompt. A free Colab T4 
 
     python -m sqlmate.train                                   # defaults below
     python -m sqlmate.train --max-steps 30                    # quick smoke run
+    python -m sqlmate.train --max-steps 150                   # what fits a free Colab session (~1.5 h on a T4)
+
+A checkpoint is saved every --save-steps steps. If the session stops, running the same command again
+continues from the last checkpoint (keep --output on Google Drive so it survives a disconnect).
     python -m sqlmate.train --report-to wandb                 # log curves to Weights & Biases
 """
 
@@ -32,7 +36,9 @@ def parse_args(argv=None):
     ap.add_argument("--lora-r", type=int, default=16)
     ap.add_argument("--lora-alpha", type=int, default=32)
     ap.add_argument("--lora-dropout", type=float, default=0.05)
-    ap.add_argument("--eval-size", type=int, default=200, help="examples held out to track validation loss")
+    ap.add_argument("--eval-size", type=int, default=100, help="examples held out to track validation loss")
+    ap.add_argument("--eval-steps", type=int, default=50)
+    ap.add_argument("--save-steps", type=int, default=25, help="checkpoint every N steps (for resuming)")
     ap.add_argument("--no-4bit", action="store_true", help="train without quantization (CPU tests)")
     ap.add_argument("--report-to", default="none", help="none or wandb")
     ap.add_argument("--run-name", default="sqlmate-qlora")
@@ -93,8 +99,10 @@ def main(argv=None) -> None:
         fp16=cuda and not bf16,
         logging_steps=10,
         eval_strategy="steps",
-        eval_steps=100 if args.max_steps < 0 else max(1, args.max_steps // 2),
-        save_strategy="no",
+        eval_steps=args.eval_steps,
+        save_strategy="steps",
+        save_steps=args.save_steps,
+        save_total_limit=1,
         report_to=args.report_to,
         seed=args.seed,
     )
@@ -103,8 +111,11 @@ def main(argv=None) -> None:
     trainable, total = trainer.model.get_nb_trainable_parameters()
     print(f"Trainable parameters: {trainable:,} of {total:,} ({100 * trainable / total:.2f}%)")
 
+    checkpoints = sorted(Path(args.output).glob("checkpoint-*"), key=lambda p: int(p.name.split("-")[-1]))
+    if checkpoints:
+        print(f"Resuming from {checkpoints[-1]}")
     start = time.time()
-    out = trainer.train()
+    out = trainer.train(resume_from_checkpoint=str(checkpoints[-1]) if checkpoints else None)
     metrics = trainer.evaluate()
     trainer.save_model(args.output)
     tokenizer.save_pretrained(args.output)

@@ -14,7 +14,19 @@ fine-tuning actually buy?
 
 ## Results
 
-RESULTS_PENDING: filled in after the training run (see `results/summary.md`).
+**Base model** (Qwen2.5-Coder-1.5B-Instruct, no training), measured on a Colab T4:
+
+| Test set | Accuracy | By difficulty |
+|---|---|---|
+| DataChat benchmark (60, in-domain) | 55.0% | easy 95.2% · medium 41.7% · hard 20.0% |
+| Public held-out (200, general SQL) | 60.5% | basic SQL 74.2% · aggregation 54.2% · joins 33–56% |
+
+**First QLoRA run** (Colab T4, 16 examples per step): validation loss fell to **0.22** by step 100, with about
+94% of SQL tokens predicted correctly. A full epoch needs about 6 hours on a free T4, longer than a free
+session, so the training script saves a checkpoint every 25 steps and resumes after a disconnect.
+
+**Fine-tuned model accuracy:** to be added after the 150-step run (`notebooks/train_colab.ipynb`).
+The table above is the baseline it will be compared against.
 
 How to read it:
 - **Single-shot**: every model answers once with the same prompt. DataChat's own 95% comes from a different
